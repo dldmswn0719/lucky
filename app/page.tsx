@@ -2,15 +2,40 @@
 import {useState} from 'react';
 import React from 'react';
 
+interface contentInter {
+    name: string;
+    desc : string;
+    keyword ?: string;
+    index ?: string
+}
+
+interface today{
+    title: string;
+    date: string;
+    content: contentInter[]
+}
+
+interface tomorrow{
+    title: string;
+    date: string;
+    content: contentInter[]
+}
+
+interface month{
+    title: string;
+    date: string;
+    content: contentInter[]
+}
+
 export default function Home() {
     const [gender,setGender] = useState<string>("");
     const [birthDate,setBirthDate] = useState<string>("");
     const [month,setMonth] = useState<string>("1");
     const [time,setTime] = useState<string>("");
 
-    const[resultToday,setResultToday] = useState(null);
-    const[resultTomorrow,setResultTomorrow] = useState(null);
-    const[resultMonth,setResultMonth] = useState(null);
+    const[resultToday,setResultToday] = useState<today | null>(null);
+    const[resultTomorrow,setResultTomorrow] = useState<tomorrow | null>(null);
+    const[resultMonth,setResultMonth] = useState<month | null>(null);
     const fetchData = async () =>{
         const res = await fetch(`/api?gender=${gender}&birthdate=${birthDate}&month=${month}&time=${time}`)
         const data = await res.json()
@@ -73,14 +98,63 @@ export default function Home() {
                         </select>
                     </div>
                     <div className="pt-5 text-lg">
-                        <button className="border w-full px-5 py-3 w-1/4 rounded-3xl bg-cyan-600 text-white" onClick={fetchData}>확인</button>
+                        <button className="border w-full px-5 py-3 rounded-3xl bg-cyan-600 text-white" onClick={fetchData}>확인</button>
                     </div>
                 </div>
-                <div className="max-w-7xl mx-atuo">
-                    {
-                        resultToday && resultToday.content[0].keyword
-                    }
-                </div>
+                {
+                    resultToday &&
+                    <div className="max-w-7xl mx-auto">
+                        <h2>{resultToday.title}</h2>
+                        <p className='text-3xl'>오늘의 운세</p>
+                        <p className='text-2xl'>{resultToday.date}</p>
+                        {
+                            resultToday.content.map((e,i)=>{
+                                return(
+                                    <div key={i}>
+                                        <h3 className="text-xl border-y bg-cyan-600 text-white py-3 pl-5">{e.name}</h3>
+                                        <p className='text-base py-3'>{e.desc}</p>
+                                    </div>
+                                )
+                            })
+                        }
+                    </div>
+                }
+                {
+                    resultTomorrow &&
+                    <div className="max-w-7xl mx-auto">
+                        <h2>{resultTomorrow.title}</h2>
+                        <p className='text-3xl'>내일의 운세</p>
+                        <p className='text-2xl'>{resultTomorrow.date}</p>
+                        {
+                            resultTomorrow.content.map((e,i)=>{
+                                return(
+                                    <div key={i}>
+                                        <h3 className="text-xl border-y bg-cyan-600 text-white py-3 pl-5">{e.name}</h3>
+                                        <p className='text-base py-3'>{e.desc}</p>
+                                    </div>
+                                )
+                            })
+                        }
+                    </div>
+                }
+                {
+                    resultMonth &&
+                    <div className="max-w-7xl mx-auto">
+                        <h2>{resultMonth.title}</h2>
+                        <p className='text-3xl'>한달의 운세</p>
+                        <p className='text-2xl'>{resultMonth.date}</p>
+                        {
+                            resultMonth.content.map((e,i)=>{
+                                return(
+                                    <div key={i}>
+                                        <h3 className="text-xl border-y bg-cyan-600 text-white py-3 pl-5">{e.name}</h3>
+                                        <p className='text-base py-3'>{e.desc}</p>
+                                    </div>
+                                )
+                            })
+                        }
+                    </div>
+                }
             </div>
         </>
     )

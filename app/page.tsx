@@ -1,5 +1,5 @@
 'use client'
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import React from 'react';
 
 interface contentInter {
@@ -15,17 +15,6 @@ interface today{
     content: contentInter[]
 }
 
-interface tomorrow{
-    title: string;
-    date: string;
-    content: contentInter[]
-}
-
-interface month{
-    title: string;
-    date: string;
-    content: contentInter[]
-}
 
 export default function Home() {
     const [gender,setGender] = useState<string>("");
@@ -34,13 +23,22 @@ export default function Home() {
     const [time,setTime] = useState<string>("");
     
     const[resultToday,setResultToday] = useState<today | null>(null);
-    const[resultTomorrow,setResultTomorrow] = useState<tomorrow | null>(null);
-    const[resultMonth,setResultMonth] = useState<month | null>(null);
+    const[resultTomorrow,setResultTomorrow] = useState<today | null>(null);
+    const[resultMonth,setResultMonth] = useState<today | null>(null);
+    const[dataResult,setDataResult] = useState<[today[] | null]>([null])
 
-    const [isModal,setIsModal] = useState<boolean>(false);
     const fetchData = async () =>{
+        if (!gender) {
+            alert("성별을 입력해주세요.");
+            return;
+        } 
+        if (!birthDate) {
+            alert("생년월일을 입력해주세요.");
+            return;
+        } 
         const res = await fetch(`/api?gender=${gender}&birthdate=${birthDate}&month=${month}&time=${time}`)
         const data = await res.json()
+        
         setResultToday(data.result.day);
         setResultTomorrow(data.result.tomorrow);
         setResultMonth(data.result.month);
@@ -48,6 +46,9 @@ export default function Home() {
         // console.log(data.result.tomorrow);
         // console.log(data.result.month);
     }
+    useEffect(()=>{
+        console.log(dataResult)
+    },[dataResult])
 
     const birthChange = ((e:React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -55,12 +56,16 @@ export default function Home() {
             setBirthDate((value))
         }
     })
-    
+    const [selectedCategory, setSelectedCategory] = useState<string>('today');
+    // const [selectedCategory, setSelectedCategory] = useState<number>(0);
+    const menuList = ['오늘', "내일", "한달"];
+    const dataList = [resultToday,resultTomorrow,  resultMonth]
+
     return (
         <>
-            <div className="w-full px-5">
-                <div className="max-w-7xl mx-auto mt-10">
-                    <h1 className="text-4xl text-center">운세</h1>
+            <div className="w-full">
+                <div className="max-w-7xl mx-auto mt-10 px-5">
+                    <h1 className="text-3xl md:text-4xl text-center">운세</h1>
                     <p onClick={()=>{location.reload();}} className='mt-10 cursor-pointer text-right'>다시하기</p>
                     <div className="border rounded-md p-5">
                         <div className="text-lg flex flex-wrap items-center">
@@ -101,22 +106,45 @@ export default function Home() {
                             </select>
                         </div>
                         <div className="pt-8 text-lg">
-                            <button className="border w-full px-5 py-3 rounded-md bg-cyan-600 text-white" onClick={()=>{fetchData(); setIsModal(true);}}>확인</button>
+                            <button className="border w-full px-5 py-3 rounded-md bg-cyan-600 text-white" onClick={()=>{fetchData();}}>확인</button>
                         </div>
+                    </div>                   
+                </div>
+                <div className="max-w-7xl mx-auto px-5">
+                    <div className='flex gap-x-2 p-2'>
+                        {/* {
+                            menuList.map((e,i)=>{
+                                return(
+                                    <button key={i} className={`border py-1 px-2 ${selectedCategory === i ? 'bg-cyan-700 text-white' : ''}`} onClick={() => setSelectedCategory(i)}>{e}</button>
+                                )
+                            })
+                        } */}
+                        
+                        {/* {
+                          resultToday && resultTomorrow && resultMonth && dataList[selectedCategory] && dataList[selectedCategory].map((e,i)=>{
+                                return(
+                                    <p key={i}>{e.desc}</p>
+                                )
+                            })
+                        } */}
+
+                        
+
+                        
+                        {/* <button className={`border py-1 px-2 ${selectedCategory === 'today' ? 'bg-cyan-700 text-white' : ''}`} onClick={() => setSelectedCategory(0)}>오늘의 운세</button>
+                        <button className={`border py-1 px-2 ${selectedCategory === 'tomorrow' ? 'bg-cyan-700 text-white' : ''}`} onClick={() => setSelectedCategory(1)}>내일의 운세</button>
+                        <button className={`border py-1 px-2 ${selectedCategory === 'month' ? 'bg-cyan-700 text-white' : ''}`} onClick={() => setSelectedCategory(2)}>한달 운세</button> */}
                     </div>
                 </div>
+
+             
                 {
-                    isModal &&
-                    <Modal setIsModal={setIsModal} resultToday={resultToday} resultTomorrow={resultTomorrow} resultMonth={resultMonth} />                
-                }
-                {/* {
-                    resultToday &&
-                    <div className="max-w-7xl mx-auto">
-                        <h2>{resultToday.title}</h2>
+                    selectedCategory === 'today' && resultToday &&
+                    <div className="max-w-7xl px-5 mx-auto">
                         <p className='text-3xl'>오늘의 운세</p>
                         <p className='text-2xl'>{resultToday.date}</p>
                         {
-                            resultToday.content.map((e,i)=>{
+                            resultToday.content.slice(0, -1).map((e,i)=>{
                                 return(
                                     <div key={i}>
                                         <h3 className="text-xl border-y bg-cyan-600 text-white py-3 pl-5">{e.name}</h3>
@@ -128,13 +156,12 @@ export default function Home() {
                     </div>
                 }
                 {
-                    resultTomorrow &&
-                    <div className="max-w-7xl mx-auto">
-                        <h2>{resultTomorrow.title}</h2>
+                    selectedCategory === 'tomorrow' && resultTomorrow &&
+                    <div className="max-w-7xl px-5 mx-auto">
                         <p className='text-3xl'>내일의 운세</p>
                         <p className='text-2xl'>{resultTomorrow.date}</p>
                         {
-                            resultTomorrow.content.map((e,i)=>{
+                            resultTomorrow.content.slice(0, -1).map((e,i)=>{
                                 return(
                                     <div key={i}>
                                         <h3 className="text-xl border-y bg-cyan-600 text-white py-3 pl-5">{e.name}</h3>
@@ -146,9 +173,8 @@ export default function Home() {
                     </div>
                 }
                 {
-                    resultMonth &&
-                    <div className="max-w-7xl mx-auto">
-                        <h2>{resultMonth.title}</h2>
+                    selectedCategory === 'month' && resultMonth &&
+                    <div className="max-w-7xl px-5 mx-auto">
                         <p className='text-3xl'>한달의 운세</p>
                         <p className='text-2xl'>{resultMonth.date}</p>
                         {
@@ -162,57 +188,7 @@ export default function Home() {
                             })
                         }
                     </div>
-                } */}
-            </div>
-        </>
-    )
-}
-
-function Modal({setIsModal, resultToday, resultTomorrow, resultMonth} : any){
-
-    const [selectedCategory, setSelectedCategory] = useState<string>('today');
-
-    const Content = () => {
-        switch(selectedCategory) {
-            case 'today':
-                return resultToday && resultToday.content.slice(0, -1).map((e:any, i:any) => (
-                    <div key={i}>
-                        <h3 className='text-xl border-y bg-cyan-600 text-white py-2 pl-5'>{e.name}</h3>
-                        <p className='text-base py-3'>{e.desc}</p>
-                    </div>
-                ));
-            case 'tomorrow':
-                return resultTomorrow && resultTomorrow.content.slice(0, -1).map((e:any, i:any) => (
-                    <div key={i}>
-                        <h3 className='text-xl border-y bg-cyan-600 text-white py-2 pl-5'>{e.name}</h3>
-                        <p className='text-base py-3'>{e.desc}</p>
-                    </div>
-                ));
-            case 'month':
-                return resultMonth && resultMonth.content.map((e:any, i:any) => (
-                    <div key={i}>
-                        <h3 className='text-xl border-y bg-cyan-600 text-white py-2 pl-5'>{e.name}</h3>
-                        <p className='text-base py-3'>{e.desc}</p>
-                    </div>
-                ));
-        }
-    }
-
-    return(
-        <>
-            <div className="fixed w-full h-full bg-black/20 left-0 top-0" onClick={()=>{setIsModal(false)}} ></div>
-            <div className="relative">
-                <div className="absolute right-0 top-0 cursor-pointer font-bold text-3xl" onClick={()=>setIsModal(false)}>X</div>
-                <div className="rounded-md bg-white fixed lg:w-3/5 w-4/5 h-4/5 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pb-2 overflow-y-scroll">
-                    <div className='flex gap-x-2 p-2 sticky -top-0.5 bg-white'>
-                        <button className={`border py-1 px-2 ${selectedCategory === 'today' ? 'bg-cyan-700 text-white' : ''}`} onClick={() => setSelectedCategory('today')}>오늘의 운세</button>
-                        <button className={`border py-1 px-2 ${selectedCategory === 'tomorrow' ? 'bg-cyan-700 text-white' : ''}`} onClick={() => setSelectedCategory('tomorrow')}>내일의 운세</button>
-                        <button className={`border py-1 px-2 ${selectedCategory === 'month' ? 'bg-cyan-700 text-white' : ''}`} onClick={() => setSelectedCategory('month')}>한달의 운세</button>
-                    </div>
-                    <p className="p-2 md:text-base text-sm">
-                        {Content()}
-                    </p>
-                </div>
+                }
             </div>
         </>
     )

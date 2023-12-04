@@ -1,13 +1,6 @@
 'use client'
-import {useEffect, useState} from 'react';
+import {useState} from 'react';
 import React from 'react';
-
-interface contentInter {
-    name: string;
-    desc : string;
-    keyword ?: string;
-    index ?: string
-}
 
 interface today{
     title: string;
@@ -15,6 +8,12 @@ interface today{
     content: contentInter[]
 }
 
+interface contentInter {
+    name: string;
+    desc : string;
+    keyword ?: string;
+    index ?: string
+}
 
 export default function Home() {
     const [gender,setGender] = useState<string>("");
@@ -53,11 +52,11 @@ export default function Home() {
 
     return (
         <>
-            <div className="w-full">
-                <div className="max-w-7xl mx-auto mt-10 px-5">
-                    <h1 className="text-3xl md:text-4xl text-center">운세</h1>
+            <div className="w-full px-[2%] flex justify-center items-center h-screen">
+                <div className="max-w-7xl mx-auto px-5 lg:basis-1/2 md:basis-4/5 basis-full border py-5 rounded-md">
+                    <h1 className="text-3xl md:text-4xl text-center">운세 🔮</h1>
                     <p onClick={()=>{location.reload();}} className='mt-10 cursor-pointer text-right'>다시하기</p>
-                    <div className="border rounded-md p-5">
+                    <div className="">
                         <div className="text-lg flex flex-wrap items-center">
                             <p className='mr-2'>성별</p>
                             <div className="flex gap-x-2">
@@ -111,7 +110,7 @@ export default function Home() {
                             }
                         </div>
                     }                   
-                    <div className='py-3'>
+                    <div>
                         {
                             dataResult && dataResult[selectedCategory].content.map((e,i)=>{
                                 return (
